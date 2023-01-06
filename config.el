@@ -80,9 +80,7 @@
 ;; https://github.com/tecosaur/emacs-config/blob/master/config.org
 (setq-default
  ;; Delete files to trash
- delete-by-moving-to-trash t
-;; Stretch cursor to the glyph width
- x-stretch-cursor t)
+ delete-by-moving-to-trash t)
 
 (setq
  ;; Raise undo-limit to 80Mb
