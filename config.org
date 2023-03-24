@@ -83,6 +83,17 @@ numbers are disabled. For relative line numbers, set this to ~relative~.
 (setq display-line-numbers-type 'relative)
 #+end_src
 
+* Splash Image
+Setup a knot as a splash screen. A constant reminder of complexity and code.
+
+#+begin_src elisp
+;; Get all files in splash folder as alternatives
+(let ((alternatives (directory-files (expand-file-name "splash/") nil "^\\([^.]\\|\\.[^.]\\|\\.\\..\\)")))
+  (setq fancy-splash-image
+        (concat doom-user-dir "splash/"
+                (nth (random (length alternatives)) alternatives))))
+#+end_src
+
 * Inspirations
 - [[https://github.com/tecosaur/emacs-config/blob/master/config.org][Tecosour]]
 * Org
@@ -99,10 +110,23 @@ change ~org-directory~. It must be set before org loads!
 (setq org-directory "~/Wip/time-machine/org")
 #+end_src
 
-** Save recurring task state in Logbook
+** Org mode basics
+
 #+begin_src elisp
-(setq org-log-done t)
+(setq org-log-done 'time ; set a time when a task was complete
+      org-log-into-drawer "LOGBOOK" ; save state changes in ~:LOGBOOK:~ drawer
+      org-pretty-entities t)
 #+end_src
+
+** Agenda
+Org's agenda is a sophesticated view on top of all TODOs in the system
+
+Start agenda in log mode and show clocked items, closed items and state changes on agenda
+#+begin_src elisp
+(setq org-agenda-start-with-log-mode t
+      org-agenda-log-mode-items '(closed clock state))
+#+end_src
+
 * Notes from Doom
 Whenever you reconfigure a package, make sure to wrap your config in an
 ~after!~ block, otherwise Doom's defaults may override your settings. E.g.
