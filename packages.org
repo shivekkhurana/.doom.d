@@ -1,0 +1,92 @@
+#+title: Packages
+#+PROPERTY: header-args :tangle packages.el
+
+* Doom custom packages
+This configuration can be used to extend doom with 3rd party packages.
+
+#+begin_src elisp
+;; -*- no-byte-compile: t; -*-
+;;; $DOOMDIR/packages.el
+#+end_src
+
+** Install from package repository
+To install a package with Doom you must declare them here and run 'doom sync'
+on the command line, then restart Emacs for the changes to take effect -- or
+use 'M-x doom/reload'.
+
+
+To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
+
+#+begin_src elisp
+;(package! some-package)
+#+end_src
+
+** Installing from source
+To install a package directly from a remote git repo, you must specify a
+`:recipe'. You'll find documentation on what `:recipe' accepts here:
+https://github.com/radian-software/straight.el#the-recipe-format
+
+#+begin_src elisp
+;(package! another-package
+;  :recipe (:host github :repo "username/repo"))
+#+end_src
+
+If the package you are trying to install does not contain a PACKAGENAME.el
+file, or is located in a subdirectory of the repo, you'll need to specify
+`:files' in the `:recipe':
+
+#+begin_src elisp
+;(package! this-package
+;  :recipe (:host github :repo "username/repo"
+;           :files ("some-file.el" "src/lisp/*.el")))
+#+end_src
+
+** Disable Doom's built in packages
+If you'd like to disable a package included with Doom, you can do so here
+with the `:disable' property:
+
+#+begin_src elisp
+;(package! builtin-package :disable t)
+#+end_src
+
+** Overwrite built in recipes
+You can override the recipe of a built in package without having to specify
+all the properties for `:recipe'. These will inherit the rest of its recipe
+from Doom or MELPA/ELPA/Emacsmirror:
+
+#+begin_src elisp
+;(package! builtin-package :recipe (:nonrecursive t))
+;(package! builtin-package-2 :recipe (:repo "myfork/package"))
+#+end_src
+
+Specify a `:branch' to install a package from a particular branch or tag.
+This is required for some packages whose default branch isn't 'master' (which
+our package manager can't deal with; see radian-software/straight.el#279)
+
+#+begin_src elisp
+;(package! builtin-package :recipe (:branch "develop"))
+#+end_src
+
+Use `:pin' to specify a particular commit to install.
+#+begin_src elisp
+;(package! builtin-package :pin "1a2b3c4d5e")
+#+end_src
+
+Doom's packages are pinned to a specific commit and updated from release to
+release. The `unpin!' macro allows you to unpin single packages...
+#+begin_src elisp
+;(unpin! pinned-package)
+#+end_src
+
+...or multiple packages
+
+#+begin_src elisp
+;(unpin! pinned-package another-pinned-package)
+#+end_src
+
+...Or *all* packages (NOT RECOMMENDED; will likely break things)
+
+#+begin_src elisp
+;(unpin! t)
+#+end_src
+
