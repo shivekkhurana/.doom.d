@@ -1,5 +1,5 @@
 #+title: Config
-#+PROPERTY: header-args :tangle config-literate.el
+#+PROPERTY: header-args :tangle config.el
 
 Literate configuration for my Doom Emacs. This config extends Doom. No ~sync~ is required after modifying this file.
 
@@ -103,11 +103,6 @@ change ~org-directory~. It must be set before org loads!
 #+begin_src elisp
 (setq org-log-done t)
 #+end_src
-** Strike through done tasks for a sense of accomplishment
-#+begin_src elisp
-(set-face-attribute 'org-headline-done nil :strike-through t)
-#+end_src
-
 * Notes from Doom
 Whenever you reconfigure a package, make sure to wrap your config in an
 ~after!~ block, otherwise Doom's defaults may override your settings. E.g.
