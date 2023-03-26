@@ -20,7 +20,7 @@
 (setq display-line-numbers-type 'relative)
 
 ;; Get all files in splash folder as alternatives
-(let ((alternatives (directory-files (expand-file-name "splash/") nil "^\\([^.]\\|\\.[^.]\\|\\.\\..\\)")))
+(let ((alternatives (directory-files (expand-file-name "~/.doom.d/splash/") nil "^\\([^.]\\|\\.[^.]\\|\\.\\..\\)")))
   (setq fancy-splash-image
         (concat doom-user-dir "splash/"
                 (nth (random (length alternatives)) alternatives))))
@@ -33,6 +33,12 @@
 
 (setq org-agenda-start-with-log-mode t
       org-agenda-log-mode-items '(closed clock state))
+
+(setq org-complete-tags-always-offer-all-agenda-tags t)
+
+(setq treemacs-is-never-other-window nil)
+
+(setq treemacs-show-hidden-files t)
 
 ;; (after! PACKAGE
 ;;  (setq x y))

@@ -38,6 +38,7 @@ By default while in insert all changes are one big blob. Be more granular
 #+begin_src elisp
 (setq auto-save-default t)
 #+end_src
+
 ** Make ~w~ cycle through CamelCasedSymbols
 #+begin_src elisp
 (global-subword-mode 1)
@@ -83,12 +84,12 @@ numbers are disabled. For relative line numbers, set this to ~relative~.
 (setq display-line-numbers-type 'relative)
 #+end_src
 
-* Splash Image
+* Splash Screen
 Setup a knot as a splash screen. A constant reminder of complexity and code.
 
 #+begin_src elisp
 ;; Get all files in splash folder as alternatives
-(let ((alternatives (directory-files (expand-file-name "splash/") nil "^\\([^.]\\|\\.[^.]\\|\\.\\..\\)")))
+(let ((alternatives (directory-files (expand-file-name "~/.doom.d/splash/") nil "^\\([^.]\\|\\.[^.]\\|\\.\\..\\)")))
   (setq fancy-splash-image
         (concat doom-user-dir "splash/"
                 (nth (random (length alternatives)) alternatives))))
@@ -118,13 +119,43 @@ change ~org-directory~. It must be set before org loads!
       org-pretty-entities t)
 #+end_src
 
-** Agenda
+* Org Agenda
 Org's agenda is a sophesticated view on top of all TODOs in the system
 
+** Log Mode
 Start agenda in log mode and show clocked items, closed items and state changes on agenda
+
 #+begin_src elisp
 (setq org-agenda-start-with-log-mode t
       org-agenda-log-mode-items '(closed clock state))
+#+end_src
+
+** Global tags
+Show tags from all agenda files in autocomplete.
+
+#+begin_src elisp
+(setq org-complete-tags-always-offer-all-agenda-tags t)
+#+end_src
+* Treemacs
+Treemacs is a file browsers with single key shortcuts.
+
+| Key | Function                 |
+| d   | Delete file under cursor |
+| c f | Create file in dir       |
+| c d | Create directory in dir  |
+| o v | Open in horizontal split |
+| o s | Open in vertical split   |
+| ?   | View all shortcuts       |
+
+** Fix window jump bug
+Set this variable to ~nil~. If set to true, I'm not able to jump to Treemacs with ~SPC w h~:
+#+begin_src  elisp
+(setq treemacs-is-never-other-window nil)
+#+end_src
+
+** Always show hidden files
+#+begin_src  elisp
+(setq treemacs-show-hidden-files t)
 #+end_src
 
 * Notes from Doom
