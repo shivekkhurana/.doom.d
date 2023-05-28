@@ -36,6 +36,25 @@
 
 (setq org-complete-tags-always-offer-all-agenda-tags t)
 
+(setq +org-capture-todo-file "queue.org")
+
+(setq daily-tasks-list '("workout" "morning meditation" "night meditation" "sleep on time" "cut off screen at 7pm" "dinner before 6pm"))
+
+(defun generate-checkbox-list (list)
+  (mapconcat (lambda (item) (format "- [ ] %s" item)) list "\n"))
+
+(setq org-capture-templates
+      '(("t" "Enter TODO item in queue 🗳️" entry
+         (file+headline +org-capture-todo-file "Inbox")
+         "* TODO %U %?\n%i\n%a")
+        ("s" "Start my day ☀️" entry
+         (file+datetree +org-capture-journal-file)
+         "* %U ☀️ [/]\n%(generate-checkbox-list daily-tasks-list)"
+         :immediate-finish t)
+        ("j" "Journal ☁️" entry
+         (file+olp+datetree +org-capture-journal-file)
+         "* %U %?\n%i\n%a" :prepend t)))
+
 (setq treemacs-is-never-other-window nil)
 
 (setq treemacs-show-hidden-files t)

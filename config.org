@@ -38,7 +38,6 @@ By default while in insert all changes are one big blob. Be more granular
 #+begin_src elisp
 (setq auto-save-default t)
 #+end_src
-
 ** Make ~w~ cycle through CamelCasedSymbols
 #+begin_src elisp
 (global-subword-mode 1)
@@ -102,7 +101,13 @@ Org mode is a text based system to clarify thoughts. It also includes a nifty ta
 
 Tasks organically evolve from these ideas, and can be managed using an Agenda.
 
-** TODO Solidify Organisation Strategy
+** TODO Organisation Strategy
+My organisation strategy is based on GTD. The core idea is to:
+- Reduce friction while recording ideas, all tasks goto queue, add tags if you can
+- Put everything on a queue, don't process anything immediately
+- Process the queue on a routine using processing strategy
+- Make files sparingly, like courses or books to have notes or have just one file for notes ? A place that consists of eveythinh I know I know
+
 ** Store Org files in the time-machine
 If you use ~org~ and don't want your org files in the default location below,
 change ~org-directory~. It must be set before org loads!
@@ -136,16 +141,64 @@ Show tags from all agenda files in autocomplete.
 #+begin_src elisp
 (setq org-complete-tags-always-offer-all-agenda-tags t)
 #+end_src
+* Org capture
+** Move default todo file to queue
+Because all my ideas are supposed to goto a queue
+
+#+begin_src elisp
+(setq +org-capture-todo-file "queue.org")
+#+end_src
+
+** Setup templates
+Check [[file:config.org::** Orgnaisation Strategy][organisation strategy]] to see reasons why these templates exist
+
+#+begin_src elisp
+(setq daily-tasks-list '("workout" "morning meditation" "night meditation" "sleep on time" "cut off screen at 7pm" "dinner before 6pm"))
+
+(defun generate-checkbox-list (list)
+  (mapconcat (lambda (item) (format "- [ ] %s" item)) list "\n"))
+
+(setq org-capture-templates
+      '(("t" "Enter TODO item in queue 🗳️" entry
+         (file+headline +org-capture-todo-file "Inbox")
+         "* TODO %U %?\n%i\n%a")
+        ("s" "Start my day ☀️" entry
+         (file+datetree +org-capture-journal-file)
+         "* %U ☀️ [/]\n%(generate-checkbox-list daily-tasks-list)"
+         :immediate-finish t)
+        ("j" "Journal ☁️" entry
+         (file+olp+datetree +org-capture-journal-file)
+         "* %U %?\n%i\n%a" :prepend t)))
+#+end_src
+
+
+* Org processing strategy
+- If a task can be done under 5 minutes, do it
+- If it takes more time, it needs to be planned
+- For a task that just needs time to be done, tag it with the respective project and mark it as TODO
+- If its a time sensitive task, add a deadline or a schedule
+
+** TODO Make org agenda show tasks by project
+
+* How to use Org Agenda
+- ~routine.org~ holds tasks that need to be done on repeat
+
+** TODO how to show agenda efficiently
+** TODO how to show workout states without TODO tag
+
 * Treemacs
 Treemacs is a file browsers with single key shortcuts.
 
+|-----+--------------------------|
 | Key | Function                 |
+|-----+--------------------------|
 | d   | Delete file under cursor |
 | c f | Create file in dir       |
 | c d | Create directory in dir  |
 | o v | Open in horizontal split |
 | o s | Open in vertical split   |
 | ?   | View all shortcuts       |
+|-----+--------------------------|
 
 ** Fix window jump bug
 Set this variable to ~nil~. If set to true, I'm not able to jump to Treemacs with ~SPC w h~:
