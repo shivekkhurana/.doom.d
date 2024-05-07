@@ -38,7 +38,13 @@
 
 (setq +org-capture-todo-file "queue.org")
 
-(setq daily-tasks-list '("workout" "morning meditation" "night meditation" "sleep on time" "cut off screen at 7pm" "dinner before 6pm"))
+(setq daily-tasks-list '("workout"
+                         "meditation on pride"
+                         "meditation on daily events"
+                         "sleep on time"
+                         "dinner before 6pm"
+                         "practice portuguese"
+                         ))
 
 (defun generate-checkbox-list (list)
   (mapconcat (lambda (item) (format "- [ ] %s" item)) list "\n"))
@@ -55,9 +61,56 @@
          (file+olp+datetree +org-capture-journal-file)
          "* %U %?\n%i\n%a" :prepend t)))
 
+(setq web-mode-enable-front-matter-block t)
+
+(define-derived-mode astro-mode web-mode "astro")
+(setq auto-mode-alist
+      (append '((".*\\.astro\\'" . astro-mode))
+              auto-mode-alist))
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration
+               '(astro-mode . "astro"))
+
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("astro-ls" "--stdio"))
+                    :activation-fn (lsp-activate-on "astro")
+                    :server-id 'astro-ls)))
+
 (setq treemacs-is-never-other-window nil)
 
 (setq treemacs-show-hidden-files t)
+
+(setq lsp-use-plists t)
+
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 
 ;; (after! PACKAGE
 ;;  (setq x y))

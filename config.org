@@ -1,7 +1,9 @@
 #+title: Config
 #+PROPERTY: header-args :tangle config.el
 
-Literate configuration for my Doom Emacs. This config extends Doom. No ~sync~ is required after modifying this file.
+Literate configuration for my Doom Emacs. This config extends Doom.
+
+No ~sync~ is required after modifying this file. Just a doom reload with ~SPC h r r~ will do
 
 * Personal Information
 Some functionality uses this to identify you, e.g. GPG configuration, email
@@ -106,7 +108,11 @@ My organisation strategy is based on GTD. The core idea is to:
 - Reduce friction while recording ideas, all tasks goto queue, add tags if you can
 - Put everything on a queue, don't process anything immediately
 - Process the queue on a routine using processing strategy
-- Make files sparingly, like courses or books to have notes or have just one file for notes ? A place that consists of eveythinh I know I know
+- Make files sparingly, like courses or books to have notes or have just one file for notes ? A place that consists of everything I know I know
+
+There should always be a space for the thing I'm doing, the thing to do next, and the things on hold.
+
+Meditations should be logged religiously. So everyday, I can check my state and growth.
 
 ** Store Org files in the time-machine
 If you use ~org~ and don't want your org files in the default location below,
@@ -141,7 +147,7 @@ Show tags from all agenda files in autocomplete.
 #+begin_src elisp
 (setq org-complete-tags-always-offer-all-agenda-tags t)
 #+end_src
-* Org capture
+* Org Capture
 ** Move default todo file to queue
 Because all my ideas are supposed to goto a queue
 
@@ -153,7 +159,13 @@ Because all my ideas are supposed to goto a queue
 Check [[file:config.org::** Orgnaisation Strategy][organisation strategy]] to see reasons why these templates exist
 
 #+begin_src elisp
-(setq daily-tasks-list '("workout" "morning meditation" "night meditation" "sleep on time" "cut off screen at 7pm" "dinner before 6pm"))
+(setq daily-tasks-list '("workout"
+                         "meditation on pride"
+                         "meditation on daily events"
+                         "sleep on time"
+                         "dinner before 6pm"
+                         "practice portuguese"
+                         ))
 
 (defun generate-checkbox-list (list)
   (mapconcat (lambda (item) (format "- [ ] %s" item)) list "\n"))
@@ -171,7 +183,6 @@ Check [[file:config.org::** Orgnaisation Strategy][organisation strategy]] to se
          "* %U %?\n%i\n%a" :prepend t)))
 #+end_src
 
-
 * Org processing strategy
 - If a task can be done under 5 minutes, do it
 - If it takes more time, it needs to be planned
@@ -185,6 +196,34 @@ Check [[file:config.org::** Orgnaisation Strategy][organisation strategy]] to se
 
 ** TODO how to show agenda efficiently
 ** TODO how to show workout states without TODO tag
+
+* Astro
+I use Astro js for my site https://krimlabs.com. This setup makes emacs play nice with Astro.
+
+** Enable front matter
+Astro allows for markdown like front matter in ~.astro~ files.
+#+begin_src elisp
+(setq web-mode-enable-front-matter-block t)
+#+end_src
+
+
+** Copy this script from github and hope it works
+#+begin_src elisp
+(define-derived-mode astro-mode web-mode "astro")
+(setq auto-mode-alist
+      (append '((".*\\.astro\\'" . astro-mode))
+              auto-mode-alist))
+
+(with-eval-after-load 'lsp-mode
+  (add-to-list 'lsp-language-id-configuration
+               '(astro-mode . "astro"))
+
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-stdio-connection '("astro-ls" "--stdio"))
+                    :activation-fn (lsp-activate-on "astro")
+                    :server-id 'astro-ls)))
+#+end_src
+
 
 * Treemacs
 Treemacs is a file browsers with single key shortcuts.
@@ -209,6 +248,45 @@ Set this variable to ~nil~. If set to true, I'm not able to jump to Treemacs wit
 ** Always show hidden files
 #+begin_src  elisp
 (setq treemacs-show-hidden-files t)
+#+end_src
+* LSP booster
+Emacs LSP booster wraps the LSP server, making it faster. It does so by pre-parsing JSON returned from LSP server to an Elisp data structure. Reading an Elisp data structure is 4 times faster than reading JSON.
+
+In order for this to run, download the =emacs-lsp-booster= binary from the repo. Then move it to =/usr/local/bin=. From the terminal, try to run =emacs-lsp-booster=. The terminal will throw a security warning. Goto Privacy and security and allow it to run.
+
+In the terminal, run =emacs-lsp-booster= again. It should ask your permission to open it. Click =open=. You will see an help output. This means that the binary is installed.
+
+#+begin_src elisp
+(setq lsp-use-plists t)
+
+(defun lsp-booster--advice-json-parse (old-fn &rest args)
+  "Try to parse bytecode instead of json."
+  (or
+   (when (equal (following-char) ?#)
+     (let ((bytecode (read (current-buffer))))
+       (when (byte-code-function-p bytecode)
+         (funcall bytecode))))
+   (apply old-fn args)))
+(advice-add (if (progn (require 'json)
+                       (fboundp 'json-parse-buffer))
+                'json-parse-buffer
+              'json-read)
+            :around
+            #'lsp-booster--advice-json-parse)
+
+(defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+  "Prepend emacs-lsp-booster command to lsp CMD."
+  (let ((orig-result (funcall old-fn cmd test?)))
+    (if (and (not test?)                             ;; for check lsp-server-present?
+             (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+             lsp-use-plists
+             (not (functionp 'json-rpc-connection))  ;; native json-rpc
+             (executable-find "emacs-lsp-booster"))
+        (progn
+          (message "Using emacs-lsp-booster for %s!" orig-result)
+          (cons "emacs-lsp-booster" orig-result))
+      orig-result)))
+(advice-add 'lsp-resolve-final-command :around #'lsp-booster--advice-final-command)
 #+end_src
 
 * Notes from Doom
